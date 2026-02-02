@@ -1,9 +1,18 @@
 # Enterprise-Knowledge-Platform using RAG
 
-This project aims to build an enterprise-grade knowledge platform using Retrieval-Augmented Generation (RAG) that enables users to query internal documents and receive real-time, document-accurate responses. The system focuses on reducing hallucinations by grounding LLM outputs strictly in retrieved document context and is deployed using DevOps automation for continuous integration and delivery.
+The Enterprise Knowledge Assistant is an AI-powered chatbot built using Retrieval-Augmented Generation (RAG) to provide accurate, document-grounded answers from enterprise data such as PDFs, policies, manuals, and academic syllabi.
+The system is fully containerized using Docker and integrated with CI/CD pipelines via GitHub Actions, enabling automated build, test, and deployment on every code update.
+This project demonstrates the practical integration of AI + DevOps, closely resembling real-world enterprise knowledge systems.
 
-overview
-This project aims to build an enterprise-grade knowledge platform using Retrieval-Augmented Generation (RAG) that enables users to query internal documents and receive real-time, document-accurate responses. The system focuses on reducing hallucinations by grounding LLM outputs strictly in retrieved document context and is deployed using DevOps automation for continuous integration and delivery.
+## Problem Statement
+
+Organizations store critical information across multiple documents (policies, guidelines, notes, manuals). Searching and retrieving accurate answers manually is time-consuming and inefficient.
+This project solves the problem by:
+
+Converting documents into searchable embeddings
+Retrieving only the most relevant content
+Generating reliable answers using an LLM
+Automating deployment using DevOps best practices
 
 ## Architecture Overview
 
