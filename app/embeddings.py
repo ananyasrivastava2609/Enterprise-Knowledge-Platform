@@ -1,53 +1,48 @@
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 import chromadb
-from chromadb.utils import embedding_functions
-
 from app.loaders import load_pdfs_from_directory, chunk_text
 
-
-# Load environment variables
-load_dotenv(dotenv_path=".env")
-
-print("DEBUG KEY:", os.getenv("OPENAI_API_KEY"))
+# Load local embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+class LocalEmbeddingFunction:
+    def __call__(self, input):
+        return model.encode(input).tolist()
 
-if not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY not found in environment variables.")
+    def name(self):
+        return "local-sentence-transformer"
 
 
 def create_vector_store():
-    # Load and chunk documents
     print("Loading documents...")
-    text = load_pdfs_from_directory("data/raw_docs")
-    chunks = chunk_text(text)
+    documents = load_pdfs_from_directory("data/raw_docs")
+
+    print(f"Loaded {len(documents)} documents")
+
+    chunks = []
+    for doc in documents:
+        chunks.extend(chunk_text(doc))
 
     print(f"Total chunks to embed: {len(chunks)}")
 
-    # Initialize Chroma client
     client = chromadb.Client()
-
-    # OpenAI embedding function
-    embedding_function = embedding_functions.OpenAIEmbeddingFunction(
-        api_key=OPENAI_API_KEY,
-        model_name="text-embedding-3-small"
-    )
-
-    # Create or get collection
     collection = client.get_or_create_collection(
         name="enterprise_docs",
-        embedding_function=embedding_function
+        embedding_function=LocalEmbeddingFunction()
     )
 
-    # Add documents
     print("Creating embeddings and storing in vector DB...")
-    collection.add(
-        documents=chunks,
-        ids=[f"id_{i}" for i in range(len(chunks))]
-    )
+
+    batch_size = 5000
+    for i in range(0, len(chunks), batch_size):
+        batch_chunks = chunks[i:i + batch_size]
+        batch_ids = [f"id_{j}" for j in range(i, i + len(batch_chunks))]
+
+        collection.add(
+            documents=batch_chunks,
+            ids=batch_ids
+        )
 
     print("Vector store created successfully!")
 
